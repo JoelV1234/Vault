@@ -11,6 +11,7 @@ function search(store, q, { typeId } = {}) {
     let score = 0;
     if (title.startsWith(query)) score = 3;
     else if (title.includes(query)) score = 2;
+    else if ((o.meta.aliases || []).some((a) => a.toLowerCase().includes(query))) score = 2;
     else if ((o.meta.tags || []).some((t) => t.toLowerCase().includes(query))) score = 2;
     else if (o.content.toLowerCase().includes(query)) score = 1;
     if (!score) continue;

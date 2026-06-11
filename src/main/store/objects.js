@@ -19,9 +19,9 @@ function get(store, id) {
   return o ? { ...o.meta, content: o.content } : null;
 }
 
-function create(store, { typeId = 'note', title = 'Untitled', content = '', props = {}, pinned = false, tags = [], collections = [] } = {}) {
+function create(store, { typeId = 'note', title = 'Untitled', content = '', props = {}, pinned = false, tags = [], collections = [], description = '', aliases = [], icon = null } = {}) {
   const now = new Date().toISOString();
-  const meta = { id: crypto.randomUUID(), type: typeId, title, pinned, created: now, updated: now, props, tags, collections };
+  const meta = { id: crypto.randomUUID(), type: typeId, title, pinned, created: now, updated: now, props, tags, collections, description, aliases, icon };
   store.objects.set(meta.id, { meta, content });
   store.persist(meta.id);
   reindexLinks(store, meta.id);
@@ -42,6 +42,9 @@ function update(store, id, patch) {
     );
   }
   if (patch.tags !== undefined) o.meta.tags = patch.tags;
+  if (patch.description !== undefined) o.meta.description = patch.description;
+  if (patch.aliases !== undefined) o.meta.aliases = patch.aliases;
+  if (patch.icon !== undefined) o.meta.icon = patch.icon;
   if (patch.collections !== undefined) o.meta.collections = patch.collections;
   if (patch.props !== undefined) o.meta.props = { ...o.meta.props, ...patch.props };
   if (patch.content !== undefined) o.content = patch.content;

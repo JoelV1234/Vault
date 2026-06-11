@@ -4,8 +4,9 @@
 import { el } from '../../shared/ui.js';
 import { icon } from '../../shared/icons.js';
 import { multiselectEditor, tagsEditor, relationEditor } from './chip-editors.js';
+import { coverEditor, blocksEditor } from './media-editors.js';
 
-export { PROP_KINDS } from './prop-kinds.js';
+export { PROP_KINDS, KIND_LABEL } from './prop-kinds.js';
 export { propDisplay } from './prop-display.js';
 
 export function propEditor(prop, value, onChange, types) {
@@ -29,6 +30,15 @@ export function propEditor(prop, value, onChange, types) {
         class: 'prop-input', type: 'date', value: value || '',
         onchange: (e) => onChange(e.target.value || null),
       });
+    case 'datetime':
+      return el('input', {
+        class: 'prop-input', type: 'datetime-local', value: value || '',
+        onchange: (e) => onChange(e.target.value || null),
+      });
+    case 'cover':
+      return coverEditor(value, onChange);
+    case 'blocks':
+      return blocksEditor(value, onChange);
     case 'daterange': {
       const v = value || {};
       const start = el('input', { class: 'prop-input', type: 'date', value: v.start || '' });

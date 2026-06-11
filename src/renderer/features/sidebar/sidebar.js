@@ -3,7 +3,7 @@
 import { el, dropdown, confirmDialog, toast } from '../../shared/ui.js';
 import { icon } from '../../shared/icons.js';
 import { ctx, navigate, refreshSidebar, onSidebarRefresh, applyTheme } from '../../shared/state.js';
-import { openTypeEditor, openSettings, openExport, openNewCollection } from '../modals/modals.js';
+import { openTypeEditor, openDeleteType, openSettings, openExport, openNewCollection } from '../modals/modals.js';
 
 export function initSidebar() {
   onSidebarRefresh(render);
@@ -68,14 +68,9 @@ async function render() {
             refreshSidebar(); navigate({ name: 'object', id: o.id });
           } },
           { label: 'New collection', icon: 'archive', onClick: () => openNewCollection(t.id) },
-          { label: 'Edit type', icon: 'pencil', onClick: () => openTypeEditor(t) },
-          ...(t.builtin ? [] : ['-', { label: 'Delete type', icon: 'trash-2', danger: true, onClick: async () => {
-            if (await confirmDialog(`Delete the "${t.name}" type? Its objects become plain Notes.`)) {
-              await window.vault.types.delete(t.id);
-              ctx.types = await window.vault.types.list();
-              refreshSidebar(); toast('Type deleted');
-            }
-          } }]),
+          { label: 'Customize type', icon: 'settings-2', onClick: () => openTypeEditor(t) },
+          ...(['note', 'daily'].includes(t.id) ? [] : ['-',
+            { label: 'Delete type', icon: 'trash-2', danger: true, onClick: () => openDeleteType(t) }]),
         ]);
       },
     },

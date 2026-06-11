@@ -3,6 +3,7 @@
 import { el } from '../../shared/ui.js';
 import { icon } from '../../shared/icons.js';
 import { VIEWS } from './constants.js';
+import { openTypeEditor } from '../modals/modals.js';
 
 export function buildToolbar(b) {
   const { type, collection, state } = b;
@@ -48,5 +49,9 @@ export function buildToolbar(b) {
     searchInp,
     b.sortSel, dirBtn,
     el('div', { class: 'flex-spacer' }),
+    el('button', {
+      class: 'icon-btn', 'aria-label': 'Customize object type', title: 'Customize type',
+      onclick: () => openTypeEditor(type),
+    }, icon('settings-2', 16)),
     b.createBtn);
 }

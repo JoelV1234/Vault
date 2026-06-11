@@ -76,6 +76,10 @@ class VaultStore {
       updated: data.updated || new Date().toISOString(),
       props: data.props || {},
       tags: Array.isArray(data.tags) ? data.tags : [],
+      // Default properties every object carries (Capacities-style).
+      description: data.description || '',
+      aliases: Array.isArray(data.aliases) ? data.aliases : [],
+      icon: data.icon || null,
       // Capacities-style: an object can live in many collections of its type.
       collections: Array.isArray(data.collections) ? data.collections : [],
     };
@@ -99,6 +103,8 @@ class VaultStore {
   listTypes() { return this.types; }
   saveType(type) { return types.saveType(this, type); }
   deleteType(id) { return types.deleteType(this, id); }
+  typeUsage(id) { return types.typeUsage(this, id); }
+  deleteTypeCascade(id) { return types.deleteTypeCascade(this, id); }
 
   // ---------- objects ----------
   list(opts) { return objects.list(this, opts); }

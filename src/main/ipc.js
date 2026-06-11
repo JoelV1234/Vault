@@ -16,6 +16,8 @@ function registerIpc(getStore) {
   handle('types:list', () => store().listTypes());
   handle('types:save', (t) => store().saveType(t));
   handle('types:delete', (id) => store().deleteType(id));
+  handle('types:usage', (id) => store().typeUsage(id));
+  handle('types:deleteCascade', (id) => store().deleteTypeCascade(id));
 
   // objects
   handle('objects:list', (opts) => store().list(opts));

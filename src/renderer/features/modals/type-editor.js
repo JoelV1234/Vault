@@ -1,20 +1,43 @@
-// Object Type editor: name, icon, color, and property schema.
+// Object Type customization (Capacities-style): icon, name, plural, color,
+// description, property schema, and cascade delete.
 import { el, modal, toast } from '../../shared/ui.js';
 import { icon, ICON_CHOICES, COLOR_CHOICES } from '../../shared/icons.js';
 import { ctx, refreshSidebar } from '../../shared/state.js';
-import { PROP_KINDS } from '../properties/props.js';
+import { buildPropsEditor } from './type-props-editor.js';
+import { openDeleteType } from './delete-type.js';
 
 export function openTypeEditor(type) {
   const draft = type
     ? structuredClone(type)
-    : { name: '', icon: 'file-text', color: COLOR_CHOICES[0], props: [] };
+    : { name: '', plural: '', description: '', icon: 'file-text', color: COLOR_CHOICES[0], props: [] };
 
+  // ----- live preview chip -----
+  const chipIcon = el('span', {}, icon(draft.icon, 14));
+  const chipName = el('span', {}, draft.name || 'Object');
+  const chip = el('span', { class: 'type-pill te-chip', style: `--chip:${draft.color}` }, chipIcon, chipName);
+  const refreshChip = () => {
+    chipIcon.replaceChildren(icon(draft.icon, 14));
+    chipName.textContent = draft.name || 'Object';
+    chip.style.setProperty('--chip', draft.color);
+  };
+
+  // ----- identity fields -----
   const nameInput = el('input', {
-    class: 'prop-input', placeholder: 'Type name (e.g. Recipe)', value: draft.name,
-    oninput: (e) => { draft.name = e.target.value; },
+    class: 'prop-input', placeholder: 'Object', value: draft.name,
+    oninput: (e) => { draft.name = e.target.value; refreshChip(); },
+  });
+  const pluralInput = el('input', {
+    class: 'prop-input', placeholder: 'Objects', value: draft.plural || '',
+    oninput: (e) => { draft.plural = e.target.value; },
+  });
+  const descInput = el('input', {
+    class: 'prop-input', placeholder: 'Your description for this object type',
+    value: draft.description || '',
+    oninput: (e) => { draft.description = e.target.value; },
   });
 
-  const iconGrid = el('div', { class: 'icon-grid', role: 'radiogroup', 'aria-label': 'Icon' });
+  // ----- icon picker (square button toggling the grid) -----
+  const iconGrid = el('div', { class: 'icon-grid', role: 'radiogroup', 'aria-label': 'Icon', hidden: true });
   for (const name of ICON_CHOICES) {
     const b = el('button', {
       class: `icon-cell ${draft.icon === name ? 'on' : ''}`, 'aria-label': name,
@@ -22,12 +45,20 @@ export function openTypeEditor(type) {
         iconGrid.querySelectorAll('.on').forEach((x) => x.classList.remove('on'));
         b.classList.add('on');
         draft.icon = name;
+        iconBtn.replaceChildren(icon(name, 17));
+        iconGrid.hidden = true;
+        refreshChip();
       },
     }, icon(name, 17));
     iconGrid.append(b);
   }
+  const iconBtn = el('button', {
+    class: 'te-square-btn', 'aria-label': 'Choose icon', title: 'Icon',
+    onclick: () => { iconGrid.hidden = !iconGrid.hidden; colorRow.hidden = true; },
+  }, icon(draft.icon, 17));
 
-  const colorRow = el('div', { class: 'chip-row' });
+  // ----- color picker (swatch button toggling the row) -----
+  const colorRow = el('div', { class: 'chip-row', hidden: true });
   for (const c of COLOR_CHOICES) {
     const b = el('button', {
       class: `color-swatch ${draft.color === c ? 'on' : ''}`, style: `--chip:${c}`, 'aria-label': c,
@@ -35,56 +66,45 @@ export function openTypeEditor(type) {
         colorRow.querySelectorAll('.on').forEach((x) => x.classList.remove('on'));
         b.classList.add('on');
         draft.color = c;
+        colorBtn.style.setProperty('--chip', c);
+        colorRow.hidden = true;
+        refreshChip();
       },
     });
     colorRow.append(b);
   }
+  const colorBtn = el('button', {
+    class: 'te-square-btn te-color-btn', style: `--chip:${draft.color}`,
+    'aria-label': 'Choose color', title: 'Color',
+    onclick: () => { colorRow.hidden = !colorRow.hidden; iconGrid.hidden = true; },
+  }, icon('palette', 16));
 
-  const propList = el('div', { class: 'prop-rows' });
-  const renderProps = () => {
-    propList.replaceChildren(...draft.props.map((p, i) => el('div', { class: 'prop-row-edit' },
-      el('input', {
-        class: 'prop-input', placeholder: 'Property name', value: p.name,
-        oninput: (e) => { p.name = e.target.value; },
-      }),
-      el('select', {
-        class: 'prop-input prop-kind', 'aria-label': 'Property type',
-        onchange: (e) => { p.kind = e.target.value; renderProps(); },
-      }, ...PROP_KINDS.map((k) => {
-        const o = el('option', { value: k.id }, k.label);
-        if (p.kind === k.id) o.selected = true;
-        return o;
-      })),
-      ['select', 'multiselect'].includes(p.kind)
-        ? el('input', {
-          class: 'prop-input', placeholder: 'Options, comma separated',
-          value: (p.options || []).join(', '),
-          oninput: (e) => { p.options = e.target.value.split(',').map((x) => x.trim()).filter(Boolean); },
-        })
+  const field = (label, control) => el('div', { class: 'te-field' },
+    el('label', { class: 'te-label' }, label), control);
+
+  const canDelete = type && !['note', 'daily'].includes(type.id);
+
+  const body = el('div', { class: 'modal-body te-body' },
+    chip,
+    el('div', { class: 'te-grid' },
+      field('Icon', iconBtn),
+      field('Name', nameInput),
+      field('Plural of name', pluralInput)),
+    iconGrid,
+    el('div', { class: 'te-grid te-grid-2' },
+      field('Color', colorBtn),
+      field('Description', descInput)),
+    colorRow,
+    el('hr', { class: 'sep' }),
+    buildPropsEditor(draft),
+    el('div', { class: 'modal-actions te-actions' },
+      canDelete
+        ? el('button', {
+          class: 'btn btn-danger-ghost',
+          onclick: () => { m.close(); openDeleteType(type); },
+        }, icon('trash-2', 14), ' Delete object type')
         : el('span', {}),
-      el('button', {
-        class: 'icon-btn', 'aria-label': 'Remove property',
-        onclick: () => { draft.props.splice(i, 1); renderProps(); },
-      }, icon('trash-2', 15)),
-    )));
-  };
-  renderProps();
-
-  const body = el('div', { class: 'modal-body' },
-    el('div', { class: 'form-row' }, el('label', {}, 'Name'), nameInput),
-    el('div', { class: 'form-row' }, el('label', {}, 'Icon'), iconGrid),
-    el('div', { class: 'form-row' }, el('label', {}, 'Color'), colorRow),
-    el('div', { class: 'form-row form-col' },
-      el('label', {}, 'Properties'),
-      propList,
-      el('button', {
-        class: 'btn btn-small',
-        onclick: () => {
-          draft.props.push({ id: crypto.randomUUID().slice(0, 8), name: '', kind: 'text' });
-          renderProps();
-        },
-      }, '+ Add property')),
-    el('div', { class: 'modal-actions' },
+      el('div', { class: 'flex-spacer' }),
       el('button', { class: 'btn btn-primary', onclick: async () => {
         if (!draft.name.trim()) { toast('Give the type a name', 'warn'); return; }
         await window.vault.types.save(draft);
@@ -94,5 +114,5 @@ export function openTypeEditor(type) {
         toast(`Type "${draft.name}" saved`);
       } }, type ? 'Save type' : 'Create type')),
   );
-  const m = modal({ title: type ? `Edit ${type.name}` : 'New object type', body, wide: true });
+  const m = modal({ title: type ? `Customize ${type.name}` : 'New object type', body, wide: true });
 }

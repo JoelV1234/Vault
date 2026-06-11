@@ -1143,3 +1143,73 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
   .object-title { color: #111; }
   .milkdown { --crepe-color-on-background: #111; }
 }
+
+/* ============ object page: cover banner + property rows ============ */
+.cover-host:empty { display: none; }
+.cover-banner {
+  width: 100%; max-height: 220px; object-fit: cover;
+  border-radius: 12px; margin-bottom: 14px; display: block;
+}
+.obj-props { display: flex; flex-direction: column; margin: 4px 0 18px; }
+.obj-prop-row {
+  display: grid; grid-template-columns: 160px 1fr;
+  align-items: center; gap: 12px; padding: 5px 0; min-height: 34px;
+}
+.obj-prop-label { font-size: 13px; color: var(--text-muted); }
+.obj-prop-value { min-width: 0; }
+.obj-prop-static { font-size: 13.5px; }
+.prop-inline { background: transparent; border-color: transparent; padding-left: 8px; }
+.prop-inline:hover { border-color: var(--border); }
+.prop-inline:focus { background: var(--bg-elev); }
+.prop-emoji { width: 64px; text-align: center; }
+.prop-blocks { resize: vertical; font-family: inherit; }
+
+/* cover image editor */
+.cover-edit-row { display: flex; align-items: center; gap: 10px; }
+.cover-thumb { height: 40px; width: 64px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
+
+/* ============ type editor (customization popup) ============ */
+.te-body { gap: 14px; }
+.te-chip { align-self: flex-start; }
+.te-grid { display: grid; grid-template-columns: 64px 1fr 1fr; gap: 14px; align-items: end; }
+.te-grid-2 { grid-template-columns: 64px 1fr; }
+.te-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.te-label { font-size: 12.5px; color: var(--text-muted); }
+.te-square-btn {
+  width: 44px; height: 38px; display: inline-flex; align-items: center; justify-content: center;
+  background: var(--bg-elev); border: 1px solid var(--border-strong); border-radius: 9px;
+}
+.te-square-btn:hover { border-color: var(--accent); }
+.te-color-btn { color: var(--chip, var(--accent)); }
+.te-heading { font-size: 15px; margin-bottom: 2px; }
+.te-prop-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 6px; border-radius: 8px; font-size: 13.5px;
+}
+.te-prop-row:hover { background: var(--bg-hover); }
+.te-prop-grip { display: inline-flex; cursor: default; }
+.te-prop-name { flex: 0 0 auto; }
+.kind-badge {
+  font-size: 11.5px; color: var(--text-muted);
+  background: var(--bg-hover); border: 1px solid var(--border);
+  border-radius: 6px; padding: 2px 8px;
+}
+.te-actions { display: flex; align-items: center; gap: 8px; }
+.btn-danger-ghost {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: #f87171; background: transparent; border: 1px solid transparent;
+  border-radius: 8px; padding: 7px 12px; font-size: 13px;
+}
+.btn-danger-ghost:hover { border-color: #f87171; background: rgba(248, 113, 113, 0.08); }
+
+/* ============ delete-type confirmation ============ */
+.del-section { display: flex; flex-direction: column; gap: 6px; }
+.del-line { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
+.del-line svg { color: #f59e0b; flex: 0 0 auto; }
+.link-btn { background: none; border: none; color: var(--accent); cursor: pointer; padding: 0; }
+.link-btn:hover { text-decoration: underline; }
+.del-list {
+  max-height: 150px; overflow: auto; border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; gap: 4px;
+}
+.del-list-item { font-size: 13px; color: var(--text-muted); }

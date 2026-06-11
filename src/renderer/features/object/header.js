@@ -4,7 +4,7 @@ import { el, debounce, toast, confirmDialog, todayStr, shiftDate, dropdown } fro
 import { icon } from '../../shared/icons.js';
 import { ctx, navigate, goBack, refreshSidebar } from '../../shared/state.js';
 import { propEditor } from '../properties/props.js';
-import { openHistory } from '../modals/modals.js';
+import { openHistory, openTypeEditor } from '../modals/modals.js';
 import { openCollectionsPopover } from './collections-popover.js';
 import { getActiveEditor } from './active-editor.js';
 
@@ -130,6 +130,10 @@ export function buildHeader(obj, type, route) {
           if (asset) getActiveEditor()?.insertImage(`file://${asset.abs}`, asset.name);
         },
       }, icon('image-plus', 16)),
+      el('button', {
+        class: 'icon-btn', 'aria-label': 'Customize object type', title: 'Customize type',
+        onclick: () => type && openTypeEditor(type),
+      }, icon('settings-2', 16)),
       pinBtn,
       el('button', {
         class: 'icon-btn', 'aria-label': 'Version history', title: 'Version history',

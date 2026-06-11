@@ -6,6 +6,7 @@ import { icon } from '../../shared/icons.js';
 import { ctx, typeOf, navigate } from '../../shared/state.js';
 import { VaultEditor } from './editor.js';
 import { buildHeader } from './header.js';
+import { buildPropertyRows, coverValue } from './property-rows.js';
 import { renderSidePanel } from './side-panel.js';
 import { getActiveEditor, setActiveEditor } from './active-editor.js';
 
@@ -30,9 +31,16 @@ export async function renderObject(content, route, { setTopbar }) {
     await window.vault.objects.update(obj.id, { content: md });
   }, 700);
 
+  // ----- cover banner (first cover-kind property, when set) -----
+  const coverHost = el('div', { class: 'cover-host' });
+  const renderCover = (v) => coverHost.replaceChildren(
+    v?.abs ? el('img', { class: 'cover-banner', src: `file://${v.abs}`, alt: 'Cover' }) : '');
+  renderCover(coverValue(obj, type));
+
   const header = buildHeader(obj, type, route);
+  const propRows = buildPropertyRows(obj, type, { onCoverChange: renderCover });
   const editorHost = el('div', { class: 'editor-host' });
-  const page = el('div', { class: 'object-page' }, header, editorHost);
+  const page = el('div', { class: 'object-page' }, coverHost, header, propRows, editorHost);
   content.replaceChildren(page);
 
   // ----- editor -----

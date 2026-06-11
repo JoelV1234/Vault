@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld('vault', {
     list: invoke('types:list'),
     save: invoke('types:save'),
     delete: invoke('types:delete'),
+    usage: invoke('types:usage'),
+    deleteCascade: invoke('types:deleteCascade'),
   },
   objects: {
     list: invoke('objects:list'),
