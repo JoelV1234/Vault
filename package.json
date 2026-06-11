@@ -1,0 +1,29 @@
+{
+  "name": "vault",
+  "version": "1.0.0",
+  "description": "An Open Source PKM, that is block based and local first",
+  "main": "src/main/main.js",
+  "scripts": {
+    "build": "node build.js",
+    "watch": "node build.js --watch",
+    "start": "npm run build && electron .",
+    "dev": "npm run build && electron .",
+    "test": "node tests/store.test.js",
+    "test:smoke": "npm run build && electron test-smoke.js --no-sandbox"
+  },
+  "author": "Jane Doe",
+  "license": "MIT",
+  "dependencies": {
+    "@milkdown/crepe": "^7.5.0",
+    "@milkdown/kit": "^7.21.2",
+    "gray-matter": "^4.0.3",
+    "lucide": "^1.17.0"
+  },
+  "overrides": {
+    "vue": "3.5.31"
+  },
+  "devDependencies": {
+    "electron": "^36.9.5",
+    "esbuild": "^0.21.5"
+  }
+}

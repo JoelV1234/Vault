@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'" />
+    <title>Quick capture</title>
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; background: #101012; color: #e8e8ea;
+        font: 14px/1.6 Inter, system-ui, -apple-system, sans-serif; }
+      .wrap { display: flex; flex-direction: column; height: 100%; padding: 14px; gap: 10px; }
+      .hint { color: #8b8b92; font-size: 12px; display: flex; justify-content: space-between; }
+      textarea { flex: 1; resize: none; background: #1a1a1d; color: inherit; border: 1px solid #2c2c30;
+        border-radius: 10px; padding: 12px; font: inherit; outline: none; }
+      textarea:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25); }
+      kbd { background: #232327; border-radius: 4px; padding: 1px 5px; font-family: inherit; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <textarea id="t" placeholder="Capture a thought… it lands in today's Daily Note" autofocus></textarea>
+      <div class="hint"><span>Quick capture</span><span><kbd>Enter</kbd> save &nbsp; <kbd>Esc</kbd> dismiss</span></div>
+    </div>
+    <script src="dist/capture.js"></script>
+  </body>
+</html>

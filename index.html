@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-accent="indigo">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: file:; font-src 'self' data:;"
+    />
+    <title>Vault</title>
+    <link rel="stylesheet" href="dist/renderer.css" />
+  </head>
+  <body>
+    <div id="app">
+      <aside id="sidebar" aria-label="Navigation"></aside>
+      <div id="workspace">
+        <header id="topbar"></header>
+        <main id="content" tabindex="-1"></main>
+      </div>
+      <aside id="sidepanel" aria-label="Context panel" hidden></aside>
+    </div>
+    <div id="overlays"></div>
+    <script src="dist/renderer.js"></script>
+  </body>
+</html>
