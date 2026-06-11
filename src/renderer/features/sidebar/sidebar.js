@@ -3,7 +3,7 @@
 import { el, dropdown, confirmDialog, toast } from '../../shared/ui.js';
 import { icon } from '../../shared/icons.js';
 import { ctx, navigate, refreshSidebar, onSidebarRefresh, applyTheme } from '../../shared/state.js';
-import { openTypeEditor, openDeleteType, openSettings, openExport, openNewCollection } from '../modals/modals.js';
+import { openTypeEditor, openDeleteType, openSettings, openExport, openNewCollection, openTrash } from '../modals/modals.js';
 
 export function initSidebar() {
   onSidebarRefresh(render);
@@ -109,6 +109,7 @@ async function render() {
     el('button', { class: 'icon-btn', 'aria-label': 'Settings', onclick: () => openSettings() }, icon('settings', 17)),
     themeToggle,
     el('div', { class: 'flex-spacer' }),
+    el('button', { class: 'icon-btn', 'aria-label': 'Trash', onclick: () => openTrash() }, icon('trash', 17)),
     el('button', { class: 'icon-btn', 'aria-label': 'Export vault', onclick: () => openExport() }, icon('share', 17)),
   );
 

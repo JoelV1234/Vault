@@ -50,6 +50,17 @@ function registerIpc(getStore) {
   handle('collections:save', (c) => store().saveCollection(c));
   handle('collections:delete', (id) => store().deleteCollection(id));
 
+  // templates
+  handle('templates:list', (typeId) => store().listTemplates(typeId));
+  handle('templates:save', (tpl) => store().saveTemplate(tpl));
+  handle('templates:delete', (id) => store().deleteTemplate(id));
+
+  // trash
+  handle('trash:list', () => store().listTrash());
+  handle('trash:restore', (id) => store().restoreTrash(id));
+  handle('trash:destroy', (id) => store().destroyTrash(id));
+  handle('trash:empty', () => store().emptyTrash());
+
   // versions
   handle('versions:list', (id) => store().versions(id));
   handle('versions:get', (id, ts) => store().getVersion(id, ts));
@@ -76,6 +87,16 @@ function registerIpc(getStore) {
     if (canceled || !filePaths.length) return null;
     const rel = store().importAsset(filePaths[0]);
     return { rel, abs: path.join(vaultDir(), rel), name: path.basename(filePaths[0]) };
+  });
+
+  // import a markdown/text file's content (appended to the current object)
+  handle('import:textFile', async () => {
+    const { canceled, filePaths } = await dialog.showOpenDialog(getMainWindow(), {
+      properties: ['openFile'],
+      filters: [{ name: 'Markdown & text', extensions: ['md', 'markdown', 'txt'] }],
+    });
+    if (canceled || !filePaths.length) return null;
+    return { name: path.basename(filePaths[0]), text: fs.readFileSync(filePaths[0], 'utf8') };
   });
 
   // export

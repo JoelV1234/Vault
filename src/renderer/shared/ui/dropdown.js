@@ -12,10 +12,14 @@ export function dropdown(anchor, items) {
       class: `menu-item ${item.danger ? 'danger' : ''}`,
       role: 'menuitem',
       onclick: () => { menu.remove(); item.onClick(); },
-    }, item.icon ? icon(item.icon, 16) : '', el('span', {}, item.label)));
+    }, item.icon ? icon(item.icon, 16) : '', el('span', {}, item.label),
+      item.hint ? el('span', { class: 'menu-hint' }, item.hint) : null));
   }
+  const x = rect.right > window.innerWidth / 2
+    ? Math.max(8, rect.right - 240)
+    : Math.min(rect.left, window.innerWidth - 248);
   menu.style.top = `${rect.bottom + 6}px`;
-  menu.style.left = `${Math.min(rect.left, window.innerWidth - 240)}px`;
+  menu.style.left = `${x}px`;
   const dismiss = (e) => {
     if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener('mousedown', dismiss, true); }
   };

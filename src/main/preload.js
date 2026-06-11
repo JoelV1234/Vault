@@ -32,6 +32,18 @@ contextBridge.exposeInMainWorld('vault', {
     save: invoke('collections:save'),
     delete: invoke('collections:delete'),
   },
+  templates: {
+    list: invoke('templates:list'),
+    save: invoke('templates:save'),
+    delete: invoke('templates:delete'),
+  },
+  trash: {
+    list: invoke('trash:list'),
+    restore: invoke('trash:restore'),
+    destroy: invoke('trash:destroy'),
+    empty: invoke('trash:empty'),
+  },
+  importTextFile: invoke('import:textFile'),
   versions: {
     list: invoke('versions:list'),
     get: invoke('versions:get'),

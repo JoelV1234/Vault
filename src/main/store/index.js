@@ -24,6 +24,8 @@ const links = require('./links');
 const { search } = require('./search');
 const tags = require('./tags');
 const collections = require('./collections');
+const templates = require('./templates');
+const trash = require('./trash');
 const daily = require('./daily');
 const { importAsset } = require('./assets');
 
@@ -51,6 +53,7 @@ class VaultStore {
     this.tagColorMap = this.readJson('tags.json') || {};
 
     this.collections = this.readJson('collections.json') || [];
+    this.templates = this.readJson('templates.json') || [];
 
     const objDir = path.join(this.dir, 'objects');
     for (const f of fs.readdirSync(objDir)) {
@@ -139,6 +142,17 @@ class VaultStore {
   listCollections() { return this.collections; }
   saveCollection(col) { return collections.saveCollection(this, col); }
   deleteCollection(id) { return collections.deleteCollection(this, id); }
+
+  // ---------- templates ----------
+  listTemplates(typeId) { return templates.listTemplates(this, typeId); }
+  saveTemplate(tpl) { return templates.saveTemplate(this, tpl); }
+  deleteTemplate(id) { return templates.deleteTemplate(this, id); }
+
+  // ---------- trash ----------
+  listTrash() { return trash.listTrash(this); }
+  restoreTrash(id) { return trash.restoreTrash(this, id); }
+  destroyTrash(id) { return trash.destroyTrash(this, id); }
+  emptyTrash() { return trash.emptyTrash(this); }
 
   // ---------- assets ----------
   importAsset(srcPath) { return importAsset(this, srcPath); }

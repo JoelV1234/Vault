@@ -5,3 +5,4 @@ export { openDeleteType } from './delete-type.js';
 export { openNewCollection } from './new-collection.js';
 export { openExport } from './export.js';
 export { openHistory } from './history.js';
+export { openTrash } from './trash.js';

@@ -1,16 +1,16 @@
-// Contextual side panel: Properties / Links / Info tabs.
+// Contextual side panel: Links / Info tabs.
+// (Properties moved onto the object page itself as Capacities-style rows.)
 import { el, toast, fmtDateTime } from '../../shared/ui.js';
 import { icon } from '../../shared/icons.js';
-import { ctx, typeOf, navigate } from '../../shared/state.js';
-import { propEditor } from '../properties/props.js';
+import { typeOf, navigate } from '../../shared/state.js';
 import { openHistory } from '../modals/modals.js';
 
 export function renderSidePanel(obj, type, route) {
   const panel = document.getElementById('sidepanel');
   panel.hidden = false;
 
-  const tabs = ['Properties', 'Links', 'Info'];
-  let current = 'Properties';
+  const tabs = ['Links', 'Info'];
+  let current = 'Links';
   const tabBar = el('div', { class: 'panel-tabs', role: 'tablist' });
   const bodyHost = el('div', { class: 'panel-body' });
 
@@ -22,8 +22,7 @@ export function renderSidePanel(obj, type, route) {
         onclick: () => { current = t; renderTab(); },
       }, t)));
 
-    if (current === 'Properties') bodyHost.replaceChildren(propsTab(obj, type));
-    else if (current === 'Links') bodyHost.replaceChildren(await linksTab(obj));
+    if (current === 'Links') bodyHost.replaceChildren(await linksTab(obj));
     else bodyHost.replaceChildren(infoTab(obj, route));
   };
 
@@ -36,23 +35,6 @@ export function renderSidePanel(obj, type, route) {
         onclick: () => { panel.hidden = true; },
       }, icon('x', 15))),
     bodyHost);
-}
-
-function propsTab(obj, type) {
-  const wrap = el('div', { class: 'props-form' });
-  const props = type?.props || [];
-  if (!props.length) {
-    wrap.append(el('p', { class: 'muted small' },
-      `No properties on the ${type?.name || 'this'} type yet. Right-click the type in the sidebar → Edit type.`));
-  }
-  for (const p of props) {
-    wrap.append(el('div', { class: 'props-field' },
-      p.kind === 'checkbox' ? null : el('label', { class: 'props-label' }, p.name),
-      propEditor(p, obj.props[p.id], (v) => {
-        window.vault.objects.update(obj.id, { props: { [p.id]: v } });
-      }, ctx.types)));
-  }
-  return wrap;
 }
 
 async function linksTab(obj) {

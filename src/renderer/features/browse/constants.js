@@ -3,6 +3,8 @@ export const VIEWS = [
   { id: 'list', icon: 'list', label: 'List' },
   { id: 'table', icon: 'table-2', label: 'Table' },
   { id: 'gallery', icon: 'layout-grid', label: 'Gallery' },
+  { id: 'calendar', icon: 'calendar', label: 'Calendar' },
+  { id: 'kanban', icon: 'square-kanban', label: 'Kanban' },
 ];
 
 export const OPS_BY_KIND = (kind) => {

@@ -1,11 +1,12 @@
 // Object page header: back button, type pill, collections, daily-note nav,
 // title, tags row, and the action buttons (image, pin, history, delete).
-import { el, debounce, toast, confirmDialog, todayStr, shiftDate, dropdown } from '../../shared/ui.js';
+import { el, debounce, todayStr, shiftDate, dropdown } from '../../shared/ui.js';
 import { icon } from '../../shared/icons.js';
 import { ctx, navigate, goBack, refreshSidebar } from '../../shared/state.js';
 import { propEditor } from '../properties/props.js';
-import { openHistory, openTypeEditor } from '../modals/modals.js';
+import { openHistory } from '../modals/modals.js';
 import { openCollectionsPopover } from './collections-popover.js';
+import { openObjectMenu } from './object-menu.js';
 import { getActiveEditor } from './active-editor.js';
 
 function gotoDaily(dateStr) {
@@ -130,26 +131,18 @@ export function buildHeader(obj, type, route) {
           if (asset) getActiveEditor()?.insertImage(`file://${asset.abs}`, asset.name);
         },
       }, icon('image-plus', 16)),
-      el('button', {
-        class: 'icon-btn', 'aria-label': 'Customize object type', title: 'Customize type',
-        onclick: () => type && openTypeEditor(type),
-      }, icon('settings-2', 16)),
       pinBtn,
       el('button', {
         class: 'icon-btn', 'aria-label': 'Version history', title: 'Version history',
         onclick: () => openHistory(obj.id, () => navigate({ ...route }, { push: false })),
       }, icon('history', 16)),
-      el('button', {
-        class: 'icon-btn', 'aria-label': 'Delete object', title: 'Delete',
-        onclick: async () => {
-          if (await confirmDialog(`Move "${obj.title}" to the vault trash?`)) {
-            await window.vault.objects.delete(obj.id);
-            refreshSidebar();
-            toast('Moved to trash');
-            navigate({ name: 'home' });
-          }
-        },
-      }, icon('trash-2', 16)))),
+      (() => {
+        const moreBtn = el('button', {
+          class: 'icon-btn', 'aria-label': 'Object menu', title: 'More actions',
+          onclick: () => openObjectMenu(moreBtn, obj, type, route),
+        }, icon('more-horizontal', 16));
+        return moreBtn;
+      })())),
     titleInput,
     tagsRow);
 }

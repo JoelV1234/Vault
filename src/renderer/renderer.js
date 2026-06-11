@@ -3,7 +3,7 @@ import '@milkdown/crepe/theme/common/style.css';
 import '@milkdown/crepe/theme/frame.css';
 import './styles.css';
 
-import { el, setTagOverrides } from './shared/ui.js';
+import { el, setTagOverrides, toast, confirmDialog } from './shared/ui.js';
 import { icon } from './shared/icons.js';
 import { ctx, loadCore, navigate, onNavigate, applyTheme, refreshSidebar } from './shared/state.js';
 import { initSidebar } from './features/sidebar/sidebar.js';
@@ -65,6 +65,10 @@ onNavigate(async (route) => {
 });
 
 // ---------- keyboard shortcuts ----------
+const onObjectPage = () => ctx.route?.name === 'object' || ctx.route?.name === 'daily';
+// editor-safe guard: Ctrl+I / Ctrl+Backspace mean italic / delete-word while typing
+const inEditable = (e) => !!e.target.closest?.('input, textarea, [contenteditable], .milkdown');
+
 function registerShortcuts() {
   document.addEventListener('keydown', (e) => {
     const mod = e.ctrlKey || e.metaKey;
@@ -95,6 +99,44 @@ function registerShortcuts() {
     } else if (key === 'e' && e.shiftKey) {
       e.preventDefault();
       openExport();
+    } else if (key === 'e' && onObjectPage() && !inEditable(e)) {
+      e.preventDefault();
+      window.vault.exportVault('pdf').then((res) => res && toast(`Saved ${res.file}`));
+    } else if (key === 'i' && onObjectPage() && !inEditable(e)) {
+      e.preventDefault();
+      (async () => {
+        const file = await window.vault.importTextFile();
+        if (!file) return;
+        const obj = await window.vault.objects.get(ctx.route.id);
+        if (!obj) return;
+        const existing = (obj.content || '').trim();
+        await window.vault.objects.update(obj.id, {
+          content: existing ? `${existing}\n\n${file.text}` : file.text,
+        });
+        toast(`Imported ${file.name}`);
+        navigate({ ...ctx.route }, { push: false });
+      })();
+    } else if (key === 'p' && e.shiftKey && onObjectPage()) {
+      e.preventDefault();
+      (async () => {
+        const obj = await window.vault.objects.get(ctx.route.id);
+        if (!obj) return;
+        await window.vault.objects.update(obj.id, { pinned: !obj.pinned });
+        refreshSidebar();
+        toast(obj.pinned ? 'Unpinned' : 'Pinned to sidebar');
+        navigate({ ...ctx.route }, { push: false });
+      })();
+    } else if (key === 'backspace' && onObjectPage() && !inEditable(e)) {
+      e.preventDefault();
+      (async () => {
+        const obj = await window.vault.objects.get(ctx.route.id);
+        if (obj && await confirmDialog(`Move "${obj.title}" to the vault trash?`)) {
+          await window.vault.objects.delete(obj.id);
+          refreshSidebar();
+          toast('Moved to trash');
+          navigate({ name: 'home' });
+        }
+      })();
     } else if (key === ',') {
       e.preventDefault();
       openSettings();
