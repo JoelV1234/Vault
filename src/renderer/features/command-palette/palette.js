@@ -64,7 +64,13 @@ function openPalette() {
     'aria-label': 'Command palette',
   });
   const list = el('div', { class: 'palette-list', role: 'listbox' });
-  const box = el('div', { class: 'palette', role: 'dialog', 'aria-label': 'Command palette' }, input, list);
+  const box = el('div', { class: 'palette', role: 'dialog', 'aria-label': 'Command palette' },
+    el('div', { class: 'palette-input-row' }, icon('search', 16), input),
+    list,
+    el('div', { class: 'palette-footer' },
+      el('span', {}, el('kbd', { class: 'kbd' }, '↑'), el('kbd', { class: 'kbd' }, '↓'), ' navigate'),
+      el('span', {}, el('kbd', { class: 'kbd' }, '↵'), ' open'),
+      el('span', {}, el('kbd', { class: 'kbd' }, 'esc'), ' close')));
   const backdrop = el('div', { class: 'backdrop backdrop-palette' }, box);
   backdrop.addEventListener('mousedown', (e) => { if (e.target === backdrop) closePalette(); });
 
@@ -74,18 +80,19 @@ function openPalette() {
   const renderRows = () => {
     list.replaceChildren();
     rows.forEach((r, i) => {
+      if (r.section) list.append(el('div', { class: 'palette-group' }, r.section));
       const rowEl = el('button', {
         class: `palette-row ${i === active ? 'active' : ''}`, role: 'option',
         'aria-selected': String(i === active),
         onclick: () => { closePalette(); r.run(); },
       },
-        r.section ? el('span', { class: 'palette-section' }, r.section) : null,
         r.color
           ? el('span', { class: 'type-chip', style: `--chip:${r.color}` }, icon(r.icon, 12))
           : icon(r.icon || 'corner-down-right', 15),
         el('span', { class: 'palette-label truncate' }, r.label),
-        r.hint ? el('span', { class: 'muted small' }, r.hint) : null);
+        r.hint ? el('span', { class: 'palette-hint muted small' }, r.hint) : null);
       list.append(rowEl);
+      if (i === active) requestAnimationFrame(() => rowEl.scrollIntoView({ block: 'nearest' }));
     });
     if (!rows.length) list.append(el('div', { class: 'picker-empty muted' }, 'No matches'));
   };

@@ -12,7 +12,6 @@ import { buildToolbar } from './toolbar.js';
 
 export async function renderGraph(content, _route, { setTopbar }) {
   setTopbar('Graph');
-  document.getElementById('sidepanel').hidden = true;
 
   const { nodes, edges } = await window.vault.graph();
   const wrap = el('div', { class: 'graph-wrap' });

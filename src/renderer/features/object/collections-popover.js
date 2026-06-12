@@ -2,7 +2,7 @@
 // plus inline creation of a new collection.
 import { el } from '../../shared/ui.js';
 import { icon } from '../../shared/icons.js';
-import { ctx, refreshSidebar } from '../../shared/state.js';
+import { ctx, reloadCollections } from '../../shared/state.js';
 
 export function openCollectionsPopover(anchor, obj, onChanged) {
   document.querySelector('.menu')?.remove();
@@ -32,13 +32,12 @@ export function openCollectionsPopover(anchor, obj, onChanged) {
   newInput.addEventListener('keydown', async (e) => {
     if (e.key !== 'Enter' || !newInput.value.trim()) return;
     const col = await window.vault.collections.save({ name: newInput.value.trim(), typeId: obj.type });
-    ctx.collections = await window.vault.collections.list();
     memberships.add(col.id);
     obj.collections = [...memberships];
     await window.vault.objects.update(obj.id, { collections: obj.collections });
     newInput.value = '';
+    await reloadCollections();
     onChanged();
-    refreshSidebar();
     renderRows();
   });
   const newRow = el('div', { class: 'col-new' }, newInput);

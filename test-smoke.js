@@ -52,10 +52,39 @@ app.whenReady().then(async () => {
   await js(`[...document.querySelectorAll('.side-item')].find(b => b.textContent.trim() === 'Note')?.click();`);
   await sleep(900);
   const browse = await js(`return {
-    toolbar: !!document.querySelector('.browse-toolbar'),
+    toolbar: !!document.querySelector('.browse-sub-toolbar'),
+    tabs: document.querySelectorAll('.browse-tab').length,
+    filterPanel: !!document.querySelector('.filter-panel'),
     viewBtns: document.querySelectorAll('.view-btn').length,
   };`);
-  check('browse view with 3 view switchers', browse.toolbar && browse.viewBtns === 3);
+  check('browse view: sub-toolbar + tabs + filter panel + 3 view switchers',
+    browse.toolbar && browse.tabs === 2 && browse.filterPanel && browse.viewBtns === 3);
+
+  // type editor autosaves and the rename shows up app-wide while it is open
+  // (opened through the type view's ⋯ overflow menu)
+  await js(`document.querySelector('.browse-tab-row .icon-btn')?.click();`);
+  await sleep(250);
+  await js(`[...document.querySelectorAll('.menu-item')].find(b => b.textContent.trim().startsWith('Customize'))?.click();`);
+  await sleep(400);
+  await js(`
+    const inp = document.querySelector('.te-grid .te-field:nth-child(2) input');
+    inp.value = 'NoteX';
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+  `);
+  await sleep(1100);
+  const renamed = await js(`return {
+    h1: document.querySelector('.browse-title h1')?.textContent || '',
+    side: [...document.querySelectorAll('.side-item')].some(b => b.textContent.trim() === 'NoteX'),
+  };`);
+  check('type editor autosaves + rename reflects app-wide', renamed.h1 === 'NoteX' && renamed.side);
+  await js(`
+    const inp = document.querySelector('.te-grid .te-field:nth-child(2) input');
+    inp.value = 'Note';
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+  `);
+  await sleep(1100);
+  await js(`document.querySelector('.modal-head .icon-btn')?.click();`);
+  await sleep(400);
 
   await js(`[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'New Note')?.click();`);
   await sleep(2200);
@@ -66,11 +95,21 @@ app.whenReady().then(async () => {
     typePill: document.querySelector('.type-pill')?.textContent.trim() || '',
     collectionsBtn: !!document.querySelector('.collections-btn'),
     tagsRow: !!document.querySelector('.tags-row'),
-    backBtn: !!document.querySelector('.back-btn'),
+    activeTab: document.querySelector('.tab-strip .tab.active .tab-title')?.textContent || '',
   };`);
   check('object created & editor (Crepe) mounted', objView.title === 'New Note' && objView.editor);
-  check('side panel with 3 tabs', objView.panelTabs === 3);
-  check('header: type pill + collections + tags + back', objView.typePill === 'Note' && objView.collectionsBtn && objView.tagsRow && objView.backBtn);
+  check('side panel with 2 tabs (Links + Info)', objView.panelTabs === 2);
+
+  // topbar nav cluster + side panel close → reopen from the topbar toggle
+  const nav = await js(`return document.querySelectorAll('.topbar-nav .icon-btn').length;`);
+  await js(`[...document.querySelectorAll('#sidepanel .panel-head .icon-btn')].pop()?.click();`);
+  await sleep(200);
+  const panelClosed = await js(`return document.getElementById('sidepanel').hidden;`);
+  await js(`document.getElementById('panel-toggle')?.click();`);
+  await sleep(200);
+  const panelReopened = await js(`return !document.getElementById('sidepanel').hidden;`);
+  check('topbar nav buttons + side panel reopens from toggle', nav === 3 && panelClosed && panelReopened);
+  check('header: type pill + collections + tags + topbar tab', objView.typePill === 'Note' && objView.collectionsBtn && objView.tagsRow && objView.activeTab === 'New Note');
 
   // collections popover: create a collection inline, object joins it
   await js(`document.querySelector('.collections-btn')?.click();`);
@@ -222,7 +261,8 @@ app.whenReady().then(async () => {
     overview.some((t) => t.includes('alpha') && t.includes('(1)')) && overview.some((t) => t.includes('beta')));
 
   // 3. daily note
-  await js(`[...document.querySelectorAll('.side-item')].find(b => b.textContent.trim() === 'Daily notes')?.click();`);
+  // daily notes no longer have a sidebar item; Ctrl+D is the entry point
+  await js(`document.dispatchEvent(new KeyboardEvent('keydown', { key: 'd', ctrlKey: true, bubbles: true }));`);
   await sleep(2200);
   const daily = await js(`return { nav: !!document.querySelector('.daily-nav'), editor: !!document.querySelector('.milkdown') };`);
   check('daily note auto-created with date nav', daily.nav && daily.editor);

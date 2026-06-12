@@ -3,7 +3,7 @@
 // app shell (renderer.js) needs.
 import { el, debounce } from '../../shared/ui.js';
 import { icon } from '../../shared/icons.js';
-import { ctx, typeOf, navigate } from '../../shared/state.js';
+import { ctx, typeOf, navigate, openObjectTab } from '../../shared/state.js';
 import { VaultEditor } from './editor.js';
 import { buildHeader } from './header.js';
 import { buildPropertyRows, coverValue } from './property-rows.js';
@@ -21,6 +21,10 @@ export async function renderObject(content, route, { setTopbar }) {
   }
   const type = typeOf(obj.type);
   setTopbar(`${type?.name || 'Object'} — ${obj.title}`);
+  openObjectTab({
+    id: obj.id, title: obj.title,
+    icon: type?.icon || 'file-text', color: type?.color || '#888',
+  });
 
   // ----- debounced persistence -----
   let pendingContent = null;
@@ -33,15 +37,18 @@ export async function renderObject(content, route, { setTopbar }) {
 
   // ----- cover banner (first cover-kind property, when set) -----
   const coverHost = el('div', { class: 'cover-host' });
-  const renderCover = (v) => coverHost.replaceChildren(
-    v?.abs ? el('img', { class: 'cover-banner', src: `file://${v.abs}`, alt: 'Cover' }) : '');
+  const renderCover = (v) => {
+    if (v?.abs) coverHost.replaceChildren(el('img', { class: 'cover-banner', src: `file://${v.abs}`, alt: 'Cover' }));
+    else coverHost.replaceChildren(); // keep :empty true so the host collapses
+  };
   renderCover(coverValue(obj, type));
 
   const header = buildHeader(obj, type, route);
-  const propRows = buildPropertyRows(obj, type, { onCoverChange: renderCover });
+  const propRows = buildPropertyRows(obj);
   const editorHost = el('div', { class: 'editor-host' });
-  const page = el('div', { class: 'object-page' }, coverHost, header, propRows, editorHost);
-  content.replaceChildren(page);
+  // cover sits outside the page column so it can span the full content width
+  const page = el('div', { class: 'object-page' }, header, propRows, editorHost);
+  content.replaceChildren(coverHost, page);
 
   // ----- editor -----
   const editor = new VaultEditor({

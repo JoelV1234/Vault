@@ -6,7 +6,6 @@ import { typeOf, navigate } from '../../shared/state.js';
 
 export async function renderTagsOverview(content, _route, { setTopbar }) {
   setTopbar('Tags');
-  document.getElementById('sidepanel').hidden = true;
 
   const tags = await window.vault.tags.all();
   const grid = el('div', { class: 'tag-grid' },
@@ -33,7 +32,6 @@ export async function renderTagsOverview(content, _route, { setTopbar }) {
 export async function renderTagPage(content, route, { setTopbar }) {
   const tag = route.tag;
   setTopbar(`Tag — #${tag}`);
-  document.getElementById('sidepanel').hidden = true;
 
   const color = tagColor(tag);
   const all = await window.vault.tags.objects(tag);

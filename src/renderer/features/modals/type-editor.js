@@ -1,8 +1,10 @@
 // Object Type customization (Capacities-style): icon, name, plural, color,
 // description, property schema, and cascade delete.
-import { el, modal, toast } from '../../shared/ui.js';
+// Existing types auto-save on every change; only brand-new types need the
+// explicit Create button (they can't be saved without a name).
+import { el, modal, toast, debounce } from '../../shared/ui.js';
 import { icon, ICON_CHOICES, COLOR_CHOICES } from '../../shared/icons.js';
-import { ctx, refreshSidebar } from '../../shared/state.js';
+import { reloadTypes } from '../../shared/state.js';
 import { buildPropsEditor } from './type-props-editor.js';
 import { openDeleteType } from './delete-type.js';
 
@@ -10,6 +12,19 @@ export function openTypeEditor(type) {
   const draft = type
     ? structuredClone(type)
     : { name: '', plural: '', description: '', icon: 'file-text', color: COLOR_CHOICES[0], props: [] };
+
+  // ----- auto-save (existing types only) -----
+  const saveStatus = el('span', { class: 'muted small te-save-status' },
+    type ? 'Changes are saved automatically' : '');
+  const saveNow = async () => {
+    if (!type) return;
+    if (!draft.name.trim()) { saveStatus.textContent = 'Name required — not saved'; return; }
+    await window.vault.types.save(draft);
+    await reloadTypes();
+    saveStatus.textContent = 'Saved';
+  };
+  const scheduleSave = debounce(saveNow, 350);
+  const touched = () => { if (type) { saveStatus.textContent = 'Saving…'; scheduleSave(); } };
 
   // ----- live preview chip -----
   const chipIcon = el('span', {}, icon(draft.icon, 14));
@@ -24,16 +39,16 @@ export function openTypeEditor(type) {
   // ----- identity fields -----
   const nameInput = el('input', {
     class: 'prop-input', placeholder: 'Object', value: draft.name,
-    oninput: (e) => { draft.name = e.target.value; refreshChip(); },
+    oninput: (e) => { draft.name = e.target.value; refreshChip(); touched(); },
   });
   const pluralInput = el('input', {
     class: 'prop-input', placeholder: 'Objects', value: draft.plural || '',
-    oninput: (e) => { draft.plural = e.target.value; },
+    oninput: (e) => { draft.plural = e.target.value; touched(); },
   });
   const descInput = el('input', {
     class: 'prop-input', placeholder: 'Your description for this object type',
     value: draft.description || '',
-    oninput: (e) => { draft.description = e.target.value; },
+    oninput: (e) => { draft.description = e.target.value; touched(); },
   });
 
   // ----- icon picker (square button toggling the grid) -----
@@ -48,6 +63,7 @@ export function openTypeEditor(type) {
         iconBtn.replaceChildren(icon(name, 17));
         iconGrid.hidden = true;
         refreshChip();
+        touched();
       },
     }, icon(name, 17));
     iconGrid.append(b);
@@ -69,6 +85,7 @@ export function openTypeEditor(type) {
         colorBtn.style.setProperty('--chip', c);
         colorRow.hidden = true;
         refreshChip();
+        touched();
       },
     });
     colorRow.append(b);
@@ -96,7 +113,7 @@ export function openTypeEditor(type) {
       field('Description', descInput)),
     colorRow,
     el('hr', { class: 'sep' }),
-    buildPropsEditor(draft),
+    buildPropsEditor(draft, touched),
     el('div', { class: 'modal-actions te-actions' },
       canDelete
         ? el('button', {
@@ -105,14 +122,19 @@ export function openTypeEditor(type) {
         }, icon('trash-2', 14), ' Delete object type')
         : el('span', {}),
       el('div', { class: 'flex-spacer' }),
-      el('button', { class: 'btn btn-primary', onclick: async () => {
+      saveStatus,
+      type ? null : el('button', { class: 'btn btn-primary', onclick: async () => {
         if (!draft.name.trim()) { toast('Give the type a name', 'warn'); return; }
         await window.vault.types.save(draft);
-        ctx.types = await window.vault.types.list();
         m.close();
-        refreshSidebar();
-        toast(`Type "${draft.name}" saved`);
-      } }, type ? 'Save type' : 'Create type')),
+        await reloadTypes();
+        toast(`Type "${draft.name}" created`);
+      } }, 'Create type')),
   );
-  const m = modal({ title: type ? `Customize ${type.name}` : 'New object type', body, wide: true });
+  const m = modal({
+    title: type ? `Customize ${type.name}` : 'New object type',
+    body,
+    wide: true,
+    onClose: () => { if (type) scheduleSave.flush?.(); },
+  });
 }

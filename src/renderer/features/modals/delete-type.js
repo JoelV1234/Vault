@@ -2,7 +2,7 @@
 // objects and collections will go with it, with expandable lists of each.
 import { el, modal, toast } from '../../shared/ui.js';
 import { icon } from '../../shared/icons.js';
-import { ctx, refreshSidebar, navigate } from '../../shared/state.js';
+import { navigate, reloadTypes, reloadCollections } from '../../shared/state.js';
 
 function expander(countLine, items, renderItem, showLabel) {
   const listHost = el('div', { class: 'del-list', hidden: true });
@@ -46,12 +46,11 @@ export async function openDeleteType(type) {
         class: 'btn btn-danger',
         onclick: async () => {
           await window.vault.types.deleteCascade(type.id);
-          ctx.types = await window.vault.types.list();
-          ctx.collections = await window.vault.collections.list();
           m.close();
-          refreshSidebar();
-          toast(`Type "${type.name}" deleted`);
           navigate({ name: 'home' });
+          await reloadTypes();
+          await reloadCollections();
+          toast(`Type "${type.name}" deleted`);
         },
       }, `Delete type & ${usage.objects.length + usage.collections.length} items`)));
 

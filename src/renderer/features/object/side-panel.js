@@ -1,13 +1,11 @@
 // Contextual side panel: Links / Info tabs.
-// (Properties moved onto the object page itself as Capacities-style rows.)
 import { el, toast, fmtDateTime } from '../../shared/ui.js';
 import { icon } from '../../shared/icons.js';
-import { typeOf, navigate } from '../../shared/state.js';
+import { typeOf, navigate, setSidePanelOpen } from '../../shared/state.js';
 import { openHistory } from '../modals/modals.js';
 
 export function renderSidePanel(obj, type, route) {
   const panel = document.getElementById('sidepanel');
-  panel.hidden = false;
 
   const tabs = ['Links', 'Info'];
   let current = 'Links';
@@ -32,7 +30,7 @@ export function renderSidePanel(obj, type, route) {
       tabBar,
       el('button', {
         class: 'icon-btn', 'aria-label': 'Close panel',
-        onclick: () => { panel.hidden = true; },
+        onclick: () => setSidePanelOpen(false),
       }, icon('x', 15))),
     bodyHost);
 }

@@ -1,15 +1,14 @@
 // "New collection" prompt for a given object type.
 import { el, modal, toast } from '../../shared/ui.js';
-import { ctx, refreshSidebar } from '../../shared/state.js';
+import { reloadCollections } from '../../shared/state.js';
 
 export function openNewCollection(typeId, onCreated) {
   const input = el('input', { class: 'prop-input', placeholder: 'Collection name' });
   const create = async () => {
     if (!input.value.trim()) return;
     const col = await window.vault.collections.save({ name: input.value.trim(), typeId });
-    ctx.collections = await window.vault.collections.list();
     m.close();
-    refreshSidebar();
+    await reloadCollections();
     toast(`Collection "${col.name}" created`);
     onCreated?.(col);
   };

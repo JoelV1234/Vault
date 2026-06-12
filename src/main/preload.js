@@ -1,4 +1,40 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webFrame } = require('electron');
+
+// Enable zoom-in / zoom-out with keyboard Ctrl + +, Ctrl + -, Ctrl + 0 and mouse Ctrl + Wheel
+window.addEventListener('DOMContentLoaded', () => {
+  // 1. Keyboard Zoom
+  window.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === '=' || e.key === '+') {
+        e.preventDefault();
+        const currentZoom = webFrame.getZoomLevel();
+        webFrame.setZoomLevel(currentZoom + 0.5);
+      } else if (e.key === '-') {
+        e.preventDefault();
+        const currentZoom = webFrame.getZoomLevel();
+        webFrame.setZoomLevel(currentZoom - 0.5);
+      } else if (e.key === '0') {
+        e.preventDefault();
+        webFrame.setZoomLevel(0);
+      }
+    }
+  });
+
+  // 2. Mouse Wheel Zoom (Ctrl + Wheel)
+  window.addEventListener('wheel', (e) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      const currentZoom = webFrame.getZoomLevel();
+      if (e.deltaY < 0) {
+        // Scroll Up -> Zoom In
+        webFrame.setZoomLevel(currentZoom + 0.2);
+      } else if (e.deltaY > 0) {
+        // Scroll Down -> Zoom Out
+        webFrame.setZoomLevel(currentZoom - 0.2);
+      }
+    }
+  }, { passive: false });
+});
 
 const invoke = (channel) => (...args) => ipcRenderer.invoke(channel, ...args);
 

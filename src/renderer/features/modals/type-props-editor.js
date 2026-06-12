@@ -14,7 +14,7 @@ const DEFAULT_PROPS = [
   { name: 'Content', icon: 'list', kind: 'Blocks' },
 ];
 
-export function buildPropsEditor(draft) {
+export function buildPropsEditor(draft, onChange = () => {}) {
   const list = el('div', { class: 'prop-rows' });
 
   const defaultRows = DEFAULT_PROPS.map((p) => el('div', { class: 'te-prop-row te-prop-default' },
@@ -27,11 +27,11 @@ export function buildPropsEditor(draft) {
     const rows = draft.props.map((p, i) => el('div', { class: 'prop-row-edit' },
       el('input', {
         class: 'prop-input', placeholder: 'Property name', value: p.name,
-        oninput: (e) => { p.name = e.target.value; },
+        oninput: (e) => { p.name = e.target.value; onChange(); },
       }),
       el('select', {
         class: 'prop-input prop-kind', 'aria-label': 'Property type',
-        onchange: (e) => { p.kind = e.target.value; render(); },
+        onchange: (e) => { p.kind = e.target.value; render(); onChange(); },
       }, ...PROP_KINDS.map((k) => {
         const o = el('option', { value: k.id }, k.label);
         if (p.kind === k.id) o.selected = true;
@@ -47,20 +47,20 @@ export function buildPropsEditor(draft) {
         ? el('input', {
           class: 'prop-input', placeholder: 'Options, comma separated',
           value: (p.options || []).join(', '),
-          oninput: (e) => { p.options = e.target.value.split(',').map((x) => x.trim()).filter(Boolean); },
+          oninput: (e) => { p.options = e.target.value.split(',').map((x) => x.trim()).filter(Boolean); onChange(); },
         })
         : el('span', {}),
       el('button', {
         class: 'icon-btn', 'aria-label': 'Move up', disabled: i === 0 ? true : undefined,
-        onclick: () => { [draft.props[i - 1], draft.props[i]] = [draft.props[i], draft.props[i - 1]]; render(); },
+        onclick: () => { [draft.props[i - 1], draft.props[i]] = [draft.props[i], draft.props[i - 1]]; render(); onChange(); },
       }, icon('chevron-up', 14)),
       el('button', {
         class: 'icon-btn', 'aria-label': 'Move down', disabled: i === draft.props.length - 1 ? true : undefined,
-        onclick: () => { [draft.props[i + 1], draft.props[i]] = [draft.props[i], draft.props[i + 1]]; render(); },
+        onclick: () => { [draft.props[i + 1], draft.props[i]] = [draft.props[i], draft.props[i + 1]]; render(); onChange(); },
       }, icon('chevron-down', 14)),
       el('button', {
         class: 'icon-btn', 'aria-label': 'Remove property',
-        onclick: () => { draft.props.splice(i, 1); render(); },
+        onclick: () => { draft.props.splice(i, 1); render(); onChange(); },
       }, icon('trash-2', 15)),
     ));
     list.replaceChildren(...defaultRows, ...rows);
@@ -76,6 +76,7 @@ export function buildPropsEditor(draft) {
       onclick: () => {
         draft.props.push({ id: crypto.randomUUID().slice(0, 8), name: '', kind: 'text' });
         render();
+        onChange();
       },
     }, icon('plus', 14), ' Add Property'));
 }

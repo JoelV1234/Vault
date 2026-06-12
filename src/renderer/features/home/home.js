@@ -5,7 +5,6 @@ import { ctx, typeOf, navigate } from '../../shared/state.js';
 
 export async function renderHome(content, _route, { setTopbar }) {
   setTopbar('Home');
-  document.getElementById('sidepanel').hidden = true;
 
   const hour = new Date().getHours();
   const greeting = hour < 5 ? 'Up late' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';

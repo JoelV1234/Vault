@@ -40,6 +40,7 @@ export function bindInteractions(g) {
   });
 
   canvas.addEventListener('wheel', (e) => {
+    if (e.ctrlKey || e.metaKey) return;
     e.preventDefault();
     const rect = canvas.getBoundingClientRect();
     zoomAt(g, e.clientX - rect.left, e.clientY - rect.top, e.deltaY < 0 ? 1.1 : 0.9);

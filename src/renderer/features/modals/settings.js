@@ -1,13 +1,12 @@
 // Settings modal: theme, accent, contrast, vault folder.
 import { el, modal } from '../../shared/ui.js';
-import { ctx, refreshSidebar, applyTheme } from '../../shared/state.js';
+import { ctx, applyTheme, setSettings } from '../../shared/state.js';
 
 export function openSettings() {
   const s = ctx.settings;
   const save = async (patch) => {
-    ctx.settings = await window.vault.settings.set(patch);
+    setSettings(await window.vault.settings.set(patch));
     applyTheme(ctx.settings);
-    refreshSidebar();
   };
 
   const themeRow = (label, control) =>

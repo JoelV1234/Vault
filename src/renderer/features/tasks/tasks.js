@@ -5,7 +5,6 @@ import { navigate, typeOf } from '../../shared/state.js';
 
 export async function renderTasks(content, _route, { setTopbar }) {
   setTopbar('Tasks');
-  document.getElementById('sidepanel').hidden = true;
 
   const host = el('div', { class: 'tasks-page' });
   content.replaceChildren(host);

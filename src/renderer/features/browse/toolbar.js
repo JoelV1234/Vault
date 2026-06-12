@@ -1,57 +1,41 @@
-// Browse toolbar: view switch, search, sort controls, create button.
-// Assigns b.sortSel / b.createBtn so renderBody can retarget them per mode.
+// Sub-toolbar: view switcher + sort direction.
+// Title, create button, and settings are in browse.js header row.
 import { el } from '../../shared/ui.js';
 import { icon } from '../../shared/icons.js';
 import { VIEWS } from './constants.js';
-import { openTypeEditor } from '../modals/modals.js';
 
-export function buildToolbar(b) {
-  const { type, collection, state } = b;
+export function buildSubToolbar(b) {
+  const { type, state } = b;
 
-  const viewBtns = VIEWS.map((v) => el('button', {
-    class: 'icon-btn view-btn', dataset: { view: v.id }, 'aria-label': `${v.label} view`, title: v.label,
-    onclick: () => { state.view = v.id; b.renderBody(); },
+  const hasDate = (type.props || []).some((p) => p.kind === 'date' || p.kind === 'daterange');
+  const hasSelect = (type.props || []).some((p) => p.kind === 'select');
+  const activeViews = VIEWS.filter((v) => {
+    if (v.id === 'calendar') return hasDate;
+    if (v.id === 'kanban') return hasSelect;
+    return true;
+  });
+
+  const viewBtns = activeViews.map((v) => el('button', {
+    class: 'icon-btn view-btn', dataset: { view: v.id }, title: v.label,
+    'aria-label': `${v.label} view`,
+    onclick: () => {
+      state.view = v.id;
+      if (b.route) b.route.view = v.id; // survives app-wide re-renders
+      b.renderBody();
+    },
   }, icon(v.icon, 16)));
 
-  const searchInp = el('input', {
-    class: 'prop-input search-input',
-    type: 'search',
-    placeholder: `Search...`,
-    value: b.searchQuery,
-    oninput: (e) => {
-      b.searchQuery = e.target.value;
-      b.renderBody();
-    }
-  });
-
-  b.sortSel = el('select', {
-    class: 'prop-input sort-sel', 'aria-label': 'Sort by',
-    onchange: (e) => { state.sort.key = e.target.value; b.renderBody(); },
-  });
-
   const dirBtn = el('button', {
-    class: 'icon-btn', 'aria-label': 'Toggle sort direction',
+    class: 'icon-btn', title: 'Sort direction',
     onclick: () => {
       state.sort.dir = state.sort.dir === 'asc' ? 'desc' : 'asc';
       dirBtn.replaceChildren(icon(state.sort.dir === 'asc' ? 'arrow-up-narrow-wide' : 'arrow-down-wide-narrow', 16));
       b.renderBody();
     },
-  }, icon(state.sort.dir === 'asc' ? 'arrow-up-narrow-wide' : 'arrow-down-wide-narrow', 16));
+  }, icon('arrow-down-wide-narrow', 16));
 
-  b.createBtn = el('button', { class: 'btn btn-primary btn-small' });
-
-  return el('div', { class: 'browse-toolbar' },
-    el('div', { class: 'browse-title' },
-      el('span', { class: 'type-chip type-chip-lg', style: `--chip:${type.color}` }, icon(type.icon, 15)),
-      el('h1', {}, collection ? collection.name : type.name),
-      collection ? el('span', { class: 'muted small' }, type.name) : null),
-    el('div', { class: 'view-switch', role: 'group', 'aria-label': 'View type' }, viewBtns),
-    searchInp,
-    b.sortSel, dirBtn,
+  return el('div', { class: 'browse-sub-toolbar' },
+    el('div', { class: 'view-switch', role: 'group', 'aria-label': 'View type' }, ...viewBtns),
     el('div', { class: 'flex-spacer' }),
-    el('button', {
-      class: 'icon-btn', 'aria-label': 'Customize object type', title: 'Customize type',
-      onclick: () => openTypeEditor(type),
-    }, icon('settings-2', 16)),
-    b.createBtn);
+    dirBtn);
 }

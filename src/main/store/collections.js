@@ -2,7 +2,10 @@
 const crypto = require('crypto');
 
 function saveCollection(store, col) {
-  if (!col.id) col.id = crypto.randomUUID();
+  if (!col.id) {
+    col.id = crypto.randomUUID();
+    col.created = new Date().toISOString();
+  }
   const i = store.collections.findIndex((c) => c.id === col.id);
   if (i >= 0) store.collections[i] = col;
   else store.collections.push(col);
