@@ -3,6 +3,7 @@
 import { el, confirmDialog, dropdown, fmtDate } from '../../shared/ui.js';
 import { icon } from '../../shared/icons.js';
 import { ctx, navigate, reloadCollections } from '../../shared/state.js';
+import { rowTrashBtn } from './object-views.js';
 
 const SORT_LABEL = {
   name: 'Name',
@@ -13,9 +14,8 @@ const SORT_LABEL = {
 const openCollection = (b, col) =>
   navigate({ name: 'browse', typeId: b.type.id, collectionId: col.id });
 
-const deleteCollection = (b, col) => async (e) => {
-  e.preventDefault();
-  if (await confirmDialog(`Delete collection "${col.name}"?`)) {
+const deleteCollection = (col) => async () => {
+  if (await confirmDialog(`Delete collection "${col.name}"? Objects will not be deleted.`)) {
     await window.vault.collections.delete(col.id);
     await reloadCollections();
   }
@@ -86,11 +86,12 @@ export function renderCollectionsView(b) {
     el('button', {
       class: 'obj-row lift',
       onclick: () => openCollection(b, col),
-      oncontextmenu: deleteCollection(b, col),
+      oncontextmenu: (e) => { e.preventDefault(); deleteCollection(col)(); },
     },
       el('span', { class: 'type-chip', style: `--chip:${b.type.color}` }, icon('archive', 13)),
       el('span', { class: 'obj-row-title truncate' }, col.name),
       col.pinnedToType ? icon('pin', 12, 'side-pin') : null,
       el('span', { class: 'muted small' }, `${col.count} item${col.count === 1 ? '' : 's'}`),
-      el('span', { class: 'muted small collections-created' }, col.created ? fmtDate(col.created) : ''))));
+      el('span', { class: 'muted small collections-created' }, col.created ? fmtDate(col.created) : ''),
+      rowTrashBtn(`Delete collection "${col.name}"`, deleteCollection(col)))));
 }

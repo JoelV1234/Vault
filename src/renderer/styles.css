@@ -1081,6 +1081,25 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
 }
 .obj-row:hover { background: var(--bg-hover); }
 .obj-row-title { flex: 1; font-weight: 500; font-size: 14px; }
+
+/* hover trash control on rows, table rows, and cards */
+.row-trash {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  color: var(--text-faint);
+  opacity: 0;
+  transition: opacity 120ms, background 120ms, color 120ms;
+}
+.obj-row:hover .row-trash, .obj-table tr:hover .row-trash,
+.card:hover .row-trash, .row-trash:focus-visible { opacity: 1; }
+.row-trash:hover { background: rgba(248, 113, 113, 0.14); color: #f87171; }
+.td-trash { width: 34px; }
+.card-head .row-trash { margin-left: auto; }
 .task-row { cursor: default; }
 .task-title { cursor: pointer; }
 .task-title:hover { text-decoration: underline; }
